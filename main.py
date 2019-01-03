@@ -2,8 +2,7 @@ from solver import AnnotatedBoard
 
 ab = AnnotatedBoard()
 ab.from_file('puzzle.txt')
-print(ab)
-print()
 
+print(ab)
 ab.solve()
 print(ab)
