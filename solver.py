@@ -23,19 +23,27 @@ def depth_first_search(board):
     """
 
     # Base case
+    count = board.unknown_count()
+    print('new function call,', count, 'unknowns')
+    print(board)
     count = deduce(board)
+    print('deduced. Now', count)
+
     while count:
         next = deduce(board)
+        print('deduced. Now', count)
         if next < count:
             count = next
         else:
             break
 
+    print('could not deduce anymore.')
     if not count:
         return True
 
     # Search case
     if board.is_valid():
+        print('board is valid')
         col = random.randint(0, 8)
         row = random.randint(0, 8)
 
@@ -43,19 +51,33 @@ def depth_first_search(board):
             col = random.randint(0, 8)
             row = random.randint(0, 8)
 
-        s = board.element(row, col)
+        stack = board.element(row, col)
+        reset = stack
+        guess_board = board
 
-        for _ in range(len(s)):
-            board.guess(row, col, s.pop())
-            if depth_first_search(board):
+        # need to preserve board!
+
+        print('going to try to backtrack', stack, 'values')
+        for _ in range(len(stack)):
+            v = stack.pop()
+            print('trying', v, 'at', row, col)
+            guess_board.guess(row, col, v)
+            if depth_first_search(guess_board):
+                board = guess_board
                 return True
+
+        board.guess(row, col, reset)
+        print('no longer back tracking')
+    else:
+        print('board is invalid')
 
     return False
 
 
 
+
 ab = AnnotatedBoard()
-ab.from_file('medium33.sudoku')
+ab.from_file('hard1.sudoku')
 print(ab)
 start = time.time()
 if depth_first_search(ab):
