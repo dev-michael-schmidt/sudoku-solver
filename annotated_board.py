@@ -88,11 +88,25 @@ class AnnotatedBoard:
         """
         Set a cell value without deduction.
 
-        :rtype:     None
+        :rtype: bool    True if guess was accepted, False otherwise
         """
+
+        old_value = self.board[row][col]
         self.board[row][col] = value
-        self.is_valid(row, col)
-        self.unknowns -= 1
+
+        if self.is_valid(row, col):
+            if isinstance(value, int) and isinstance(self.board[row][col], set):
+                self.unknowns -= 1
+            elif isinstance(value, set) and isinstance(self.board[row][col], int):
+                self.unknowns += 1
+
+            return True
+        else:
+            self.board[row][col] = old_value
+            return False
+
+
+
 
     def unknown_count(self):
         """
@@ -124,10 +138,100 @@ class AnnotatedBoard:
 
         :rtype: bool    True if board is valid, otherwise False
         """
-        ## BUG: May need to check for duplicate values
+        if (self.block_duplicate(row, col) or
+            self.row_duplicate(row) or
+            self.col_duplicate(col)):
+            return False
+
+
         return (self.block_elimination(row, col) and
                 self.row_elimination(row) and
                 self.col_elimination(col))
+
+    def row_duplicate(self, row=None):
+        """
+        Check for duplicates at the row level
+
+        :row:   int     (Optional) specified row to check
+        :rtype: bool    True if a duplicate exists
+        """
+        if not row:
+            for r in range(9):
+                s = set({})
+                for c in range(9):
+                    if isinstance(self.board[r][c], int):
+                        if self.board[r][c] in s:
+                            return True
+                        s.add(self.board[r][c])
+        else:
+            for c in range(9):
+                s = set({})
+                if isinstance(self.board[row][c], int):
+                    if self.board[row][c] in s:
+                        return True
+                    s.add(self.board[row][c])
+        return False
+
+    def col_duplicate(self, col=None):
+        """
+        Check for duplicates at the column level
+
+        :row:   int     (Optional) specified column to check
+        :rtype: bool    True if a duplicate exists
+        """
+        if not col:
+            for c in range(9):
+                s = set({})
+                for r in range(9):
+                    if isinstance(self.board[r][c], int):
+                        if self.board[r][c] in s:
+                            return True
+                        s.add(self.board[r][c])
+        else:
+            for r in range(9):
+                s = set({})
+                if isinstance(self.board[r][col], int):
+                    if self.board[r][col] in s:
+                        return True
+                    s.add(self.board[r][col])
+        return False
+
+    def block_duplicate(self, row=None, col=None):
+        """
+
+        """
+        if row is not None and col is not None:
+            row_start = row
+            while row_start % 3:
+                row_start -= 1
+
+            col_start = col
+            while col_start % 3:
+                col_start -= 1
+
+            s = set({})
+
+            for r in range(row_start, row_start + 3):
+                for c in range(col_start, col_start + 3):
+                    if isinstance(self.board[r][c], int):
+                        if self.board[r][c] in s:
+                            return True
+                        s.add(self.board[r][c])
+
+        else:
+            for row_start in range(0, 9, 3):
+                for col_start in range(0, 9, 3):
+
+                    s = set({})
+
+                    for r in range(row_start, row_start + 3):
+                        for c in range(col_start, col_start + 3):
+                            if isinstance(self.board[r][c], int):
+                                if self.board[r][c] in s:
+                                    return True
+                                s.add(self.board[r][c])
+
+        return False
 
     def row_deduce(self):
         """
