@@ -62,7 +62,7 @@ class AnnotatedBoard:
         """
         Populate the board using a file.
 
-        :rtype: bool    True if board is valid, otherwise False
+        :rtype: None
         """
         with open(filename, 'r') as f:
             for r in range(9):
@@ -71,13 +71,12 @@ class AnnotatedBoard:
                     if row[c] != '.':
                         self.board[r][int(c / 2)] = int(row[c])
 
-        if not self.full_elimination():
-            return False
+        if not self.is_valid():
+            raise
 
         self.unknowns = self.unknown_count()
-        return True
 
-    def get_element(self, row, col):
+    def element(self, row, col):
         """
         Return the value, or set of possible values.
 
@@ -92,6 +91,8 @@ class AnnotatedBoard:
         :rtype:     None
         """
         self.board[row][col] = value
+        self.is_valid(row, col)
+        self.unknowns -= 1
 
     def unknown_count(self):
         """
@@ -123,6 +124,7 @@ class AnnotatedBoard:
 
         :rtype: bool    True if board is valid, otherwise False
         """
+        ## BUG: May need to check for duplicate values
         return (self.block_elimination(row, col) and
                 self.row_elimination(row) and
                 self.col_elimination(col))

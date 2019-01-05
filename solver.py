@@ -1,12 +1,8 @@
 """Solve a sudoku puzzle using the AnnotatedBoard() class."""
 
-# import time
+import time
 import random
 from annotated_board import AnnotatedBoard
-
-
-ab = AnnotatedBoard()
-ab.from_file('hard1.sudoku')
 
 
 def deduce(board):
@@ -25,15 +21,20 @@ def depth_first_search(board):
     :board:     AnnotatedBoard() object
     :rtype:     None
     """
-    unknowns = deduce(board)
-    while unknowns > 0:
-        unknown_pass = deduce(board)
-        if unknown_pass < unknowns:
-            unknowns = unknown_pass
 
-    if unknowns == 0:
-        return
+    # Base case
+    count = deduce(board)
+    while count:
+        next = deduce(board)
+        if next < count:
+            count = next
+        else:
+            break
 
+    if not count:
+        return True
+
+    # Search case
     if board.is_valid():
         col = random.randint(0, 8)
         row = random.randint(0, 8)
@@ -42,9 +43,23 @@ def depth_first_search(board):
             col = random.randint(0, 8)
             row = random.randint(0, 8)
 
-            s = board.get_element(row, col)
+        s = board.element(row, col)
 
-            stack = []
+        for _ in range(len(s)):
+            board.guess(row, col, s.pop())
+            if depth_first_search(board):
+                return True
 
-            for _ in range(len(s)):
-                stack.append((s.pop(), board))
+    return False
+
+
+
+ab = AnnotatedBoard()
+ab.from_file('medium33.sudoku')
+print(ab)
+start = time.time()
+if depth_first_search(ab):
+    stop = time.time()
+    print('SUCCESS', stop-start)
+    print()
+print(ab)
