@@ -1,24 +1,50 @@
-import time
+"""Solve a sudoku puzzle using the AnnotatedBoard() class."""
+
+# import time
 import random
-from board import AnnotatedBoard
+from annotated_board import AnnotatedBoard
 
 
 ab = AnnotatedBoard()
 ab.from_file('hard1.sudoku')
 
-print()
+
+def deduce(board):
+    """
+    Deduce values from the board and return number of unknowns.
+
+    """
+    board.full_deduce()
+    return board.unknown_count()
+
 
 def depth_first_search(board):
-    col = random.randint(0, 8)
-    row = random.randint(0, 8)
+    """
+    Search using DFS when deductions can't be made, otherwise deduce values.
 
-    while isinstance(board.element(row, col), int):
+    :board:     AnnotatedBoard() object
+    :rtype:     None
+    """
+    unknowns = deduce(board)
+    while unknowns > 0:
+        unknown_pass = deduce(board)
+        if unknown_pass < unknowns:
+            unknowns = unknown_pass
+
+    if unknowns == 0:
+        return
+
+    if board.is_valid():
         col = random.randint(0, 8)
         row = random.randint(0, 8)
 
-    s = board.get_element(row, col)
+        while isinstance(board.element(row, col), int):
+            col = random.randint(0, 8)
+            row = random.randint(0, 8)
 
-    stack = []
+            s = board.get_element(row, col)
 
-    for _ in range(len(s)):
-        stack.append((s.pop(), board))
+            stack = []
+
+            for _ in range(len(s)):
+                stack.append((s.pop(), board))
