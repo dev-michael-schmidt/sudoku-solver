@@ -1,4 +1,5 @@
 from itertools import chain, combinations
+from copy import copy, deepcopy
 
 def one_element_subset(ss):
     return chain(*map(lambda x: combinations(ss, x), range(1, 2)))
@@ -15,13 +16,14 @@ class AnnotatedBoard:
         possiblies.
         """
         self.board = [[set({i for i in range(1, 10)}) for _ in range(9)] for _ in range(9)]
+        self.unknowns = 81
 
     def __repr__(self):
         """Display basic board characteristics for interactive intepreters."""
-        unknown = self.unknown_count()
-        return "AnnotatedBoard(), known {k}".format(
-            k=81-unknown,
-        )
+        k = 81 - self.unknown_count()
+        p = k / 0.81
+        v = 'valid' if self.is_valid() else 'invalid'
+        return 'AnnotatedBoard(%d known, %0.1f%% complete, ' % (k, p) + v + ')'
 
     def __str__(self):
         """
@@ -44,6 +46,23 @@ class AnnotatedBoard:
             else:
                 s += '\n'
         return s
+
+    def __deepcopy__(self, memo): # memo is a dict of id's to copies
+        id_self = id(self)        # memoization avoids unnecesary recursion
+        _copy = memo.get(id_self)
+        if _copy is None:
+            _copy = type(self)()
+            memo[id_self] = _copy
+        _copy.unknowns = self.unknowns
+        _copy.board = [[set({i for i in range(1, 10)}) for _ in range(9)] for _ in range(9)]
+        for r in range(9):
+            for c in range(9):
+                if isinstance(self.board[r][c], set):
+                    _copy.board[r][c] = set(v for v in self.board[r][c])
+                else:
+                    _copy.board[r][c] = self.board[r][c]
+
+        return _copy
 
     def from_list_of_lists(self, board):
         """
@@ -104,9 +123,6 @@ class AnnotatedBoard:
         else:
             self.board[row][col] = old_value
             return False
-
-
-
 
     def unknown_count(self):
         """
