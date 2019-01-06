@@ -54,7 +54,7 @@ class AnnotatedBoard:
             _copy = type(self)()
             memo[id_self] = _copy
         _copy.unknowns = self.unknowns
-        _copy.board = [[set({i for i in range(1, 10)}) for _ in range(9)] for _ in range(9)]
+        _copy.board = [[set({}) for _ in range(9)] for _ in range(9)]
         for r in range(9):
             for c in range(9):
                 if isinstance(self.board[r][c], set):
