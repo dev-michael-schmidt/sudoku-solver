@@ -10,7 +10,7 @@ class AnnotatedBoard:
     A sudoku board with unknown cells annotated with possible values (sets).
     """
 
-    def __init__(self):
+    def __init__(self, board=None):
         """
         Initialize a board with cells which contain no values, and all
         possiblies.
@@ -23,7 +23,7 @@ class AnnotatedBoard:
             self.unknowns = board.unknowns
 
     def __repr__(self):
-        """Display basic board characteristics for interactive intepreters."""
+        """Display basic board characteristics for interactive interpreters."""
         k = 81 - self.unknowns
         p = k / 0.81
         v = 'valid' if self.is_valid() else 'invalid'
@@ -105,6 +105,9 @@ class AnnotatedBoard:
 
         :rtype: int/set()
         """
+        if isinstance(self.board[row][col], set):
+            return set(self.board[row][col])
+
         return self.board[row][col]
 
     def guess(self, row, col, value):
