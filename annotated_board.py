@@ -15,12 +15,16 @@ class AnnotatedBoard:
         Initialize a board with cells which contain no values, and all
         possiblies.
         """
-        self.board = [[set({i for i in range(1, 10)}) for _ in range(9)] for _ in range(9)]
-        self.unknowns = 81
+        if not board:
+            self.board = [[set({i for i in range(1, 10)}) for _ in range(9)] for _ in range(9)]
+            self.unknowns = 81
+        elif isinstance(board, type(self)):
+            self.board =[[board.board[r][c] for c in range(9)] for r in range(9)]
+            self.unknowns = board.unknowns
 
     def __repr__(self):
         """Display basic board characteristics for interactive intepreters."""
-        k = 81 - self.unknown_count()
+        k = 81 - self.unknowns
         p = k / 0.81
         v = 'valid' if self.is_valid() else 'invalid'
         return 'AnnotatedBoard(%d known, %0.1f%% complete, ' % (k, p) + v + ')'
@@ -52,7 +56,7 @@ class AnnotatedBoard:
         _copy = memo.get(id_self)
         if _copy is None:
             _copy = type(self)()
-            memo[id_self] = _copy
+        memo[id_self] = _copy
         _copy.unknowns = self.unknowns
         _copy.board = [[set({}) for _ in range(9)] for _ in range(9)]
         for r in range(9):
@@ -73,7 +77,7 @@ class AnnotatedBoard:
         self.board = board
 
         if self.is_valid():
-            self.unknowns = self.unknown_count()
+            self.unknown_count()
         else:
             raise
 
@@ -93,7 +97,7 @@ class AnnotatedBoard:
         if not self.is_valid():
             raise
 
-        self.unknowns = self.unknown_count()
+        self.unknown_count()
 
     def element(self, row, col):
         """
@@ -107,21 +111,30 @@ class AnnotatedBoard:
         """
         Set a cell value without deduction.
 
+        :row:   int     row index
+        :col:   int     col index
+        :value: int     -1 to reset, otherwise 1-9
         :rtype: bool    True if guess was accepted, False otherwise
         """
 
-        old_value = self.board[row][col]
-        self.board[row][col] = value
+        old = self.board[row][col]
 
-        if self.is_valid(row, col):
-            if isinstance(value, int) and isinstance(self.board[row][col], set):
+        if value == -1:
+            self.board[row][col] = set(v for v in range(1, 10))
+            return self.is_valid(row, col)
+        elif isinstance(self.board[row][col], set):
+            self.board[row][col] = value
+            if self.is_valid(row, col):
                 self.unknowns -= 1
-            elif isinstance(value, set) and isinstance(self.board[row][col], int):
-                self.unknowns += 1
-
-            return True
-        else:
-            self.board[row][col] = old_value
+                return True
+            else:
+                self.board[row][col] = old
+                return False
+        elif isinstance(self.board[row][col], int):
+            self.board[row][col] = value
+            if self.is_valid(row, col):
+                return True
+            self.board[row][col] = old
             return False
 
     def unknown_count(self):
@@ -135,6 +148,8 @@ class AnnotatedBoard:
             for c in range(9):
                 if isinstance(self.board[r][c], set):
                     count += 1
+
+        self.unknowns = count
         return count
 
     def full_deduce(self):
@@ -152,24 +167,18 @@ class AnnotatedBoard:
         Checks if a board is valid by eliminating possibilities in unknown
         cells.
 
-        :rtype: bool    True if board is valid, otherwise False
+        :rtype: bool    True if board is valid, otherwise False.
         """
-        if (self.block_duplicate(row, col) or
-            self.row_duplicate(row) or
-            self.col_duplicate(col)):
-            return False
-
-
         return (self.block_elimination(row, col) and
                 self.row_elimination(row) and
                 self.col_elimination(col))
 
     def row_duplicate(self, row=None):
         """
-        Check for duplicates at the row level
+        Check for duplicates at the row level.  Currently not used.
 
-        :row:   int     (Optional) specified row to check
-        :rtype: bool    True if a duplicate exists
+        :row:   int     (Optional) specified row to check.
+        :rtype: bool    True if a duplicate exists, otherwise False.
         """
         if not row:
             for r in range(9):
@@ -190,10 +199,10 @@ class AnnotatedBoard:
 
     def col_duplicate(self, col=None):
         """
-        Check for duplicates at the column level
+        Check for duplicates at the column level.  Currently not used.
 
-        :row:   int     (Optional) specified column to check
-        :rtype: bool    True if a duplicate exists
+        :col:   int     (Optional) specified column to check
+        :rtype: bool    True if a duplicate exists, otherwise False.
         """
         if not col:
             for c in range(9):
@@ -214,7 +223,11 @@ class AnnotatedBoard:
 
     def block_duplicate(self, row=None, col=None):
         """
+        Check for duplicates at the block level.  Currently not used.
 
+        :row:   int     (Optional) When used with col, will search block.
+        :col:   int     (Optional) column of cell.
+        :rtype: bool    True if a duplicate exists, otherwise False.
         """
         if row is not None and col is not None:
             row_start = row
@@ -286,7 +299,7 @@ class AnnotatedBoard:
         """
         Deduce values on cells at the column level.
 
-        :rtype: bool    True if board is valid, otherwise False
+        :rtype: bool    True if board is valid, otherwise False.
         """
         for c in range(9):
             s = set({})
