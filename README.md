@@ -57,7 +57,7 @@ returns `True` if the puzzle is valid, otherwise `False`.
 
 
 #### Format
-Use dots to specify unknown cells in a plain text format.
+Use dots to specify unknown cells in a plain text format. include a space between each value.
 ```
 2 . . . . . . 6 3
 . . 6 5 8 3 . . 9
