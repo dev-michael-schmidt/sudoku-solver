@@ -395,16 +395,8 @@ class AnnotatedBoard:
                         return False
         else:
             for r in range(9):
-                s = set({})
-                for c in range(9):
-                    if isinstance(self.board[r][c], int):
-                        s.add(self.board[r][c])
+                self.row_elimination(r)
 
-                for c in range(9):
-                    if isinstance(self.board[r][c], set):
-                        self.board[r][c] -= s
-                        if not len(self.board[r][c]):
-                            return False
         return True
 
     def col_elimination(self, col=None):
@@ -427,16 +419,8 @@ class AnnotatedBoard:
                         return False
         else:
             for c in range(9):
-                s = set({})
-                for r in range(9):
-                    if isinstance(self.board[r][c], int):
-                        s.add(self.board[r][c])
-
-                for r in range(9):
-                    if isinstance(self.board[r][c], set):
-                        self.board[r][c] -= s
-                        if not len(self.board[r][c]):
-                            return False
+                self.col_elimination(c)
+                
         return True
 
     def block_elimination(self, row=None, col=None):
