@@ -1,3 +1,7 @@
+# C++
+*.o
+sudoku_solver
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
